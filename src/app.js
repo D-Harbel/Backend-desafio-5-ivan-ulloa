@@ -27,8 +27,8 @@ app.use(sessions(
         store: mongoStore.create(
             {
                 mongoUrl:'mongodb+srv://I_Ulloa:Coderclave@ecommerce.6tv4mer.mongodb.net/?retryWrites=true&w=majority',
-                mongoOptions:{dbName:"test"},
-                ttl:3600
+                mongoOptions:{dbName:"ecommerce"},
+                ttl:3600,
             }
         )
     }
@@ -58,15 +58,7 @@ app.use('/', ViewsRouter(io))
 app.use('/api/sessions', SessionRouter(io) )
 
 
-app.get('/api/products', async (req, res) => {
-    try {
-        const products = await ProductDao.getProducts(req.query);
-        res.json(products);
-    } catch (error) {
-        console.error('Error al obtener productos:', error);
-        res.status(500).json({ error: 'Error interno del servidor' });
-    }
-});
+app.use('/api/products', ProductRouter(io));
 app.use('/api/carts', CartRouter(io));
 app.use('/chat', ChatRouter(io, MessageDao));
 
@@ -85,14 +77,20 @@ app.get('/views/carts/:cid', async (req, res) => {
     }
 });
 
-app.get('/realtimeproducts', (req, res) => {
-    res.render('realTimeProducts');
+app.get('/realtimeproducts', async (req, res) => {
+    try {
+        const products = await ProductDao.getProducts({ limit: req.query.limit, page: req.query.page, sort: req.query.sort, query: req.query.query });
+        res.render('realtimeproducts', { products });
+    } catch (error) {
+        console.error('Error al obtener productos para la vista:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
 });
 
 app.get('/views/products', async (req, res) => {
     try {
         let usuario=req.session.usuario
-        const products = await ProductDao.getProducts({ limit: req.query.limit, page: req.query.page, sort: req.query.sort, query: req.query.query });
+        const products = await ProductDao.getProducts({ limit: 10, page: req.query.page, sort: req.query.sort, query: req.query.query });
         res.render('products', { products, usuario });
     } catch (error) {
         console.error('Error al obtener productos para la vista:', error);
@@ -103,13 +101,13 @@ app.get('/views/products', async (req, res) => {
 io.on('connection', async (socket) => {
     console.log('Cliente conectado');
 
-    const products = await ProductDao.getProducts({ limit: 10, page: 1, sort: 'asc', query: 'available' });
+    const products = await ProductDao.getProducts({ limit: 50});
     socket.emit('products', products);
 
     socket.on('addToCart', async ({ productId, productName }) => {
         try {
 
-            const cartId = "65711d223f01f9b553bbfdb6";
+            const cartId = "6585aebbfcb39ade17d125d0";
             const quantity = 1;
 
             await CartDao.addProductToCart(cartId, productId, quantity);
@@ -128,7 +126,7 @@ server.listen(port, () => {
 
 try {
     mongoose.connect('mongodb+srv://I_Ulloa:Coderclave@ecommerce.6tv4mer.mongodb.net/?retryWrites=true&w=majority',
-    {dbName:"test"})
+    {dbName:"ecommerce"})
     console.log("DB online...!!!")
 } catch (error) {
     console.log(error.message)

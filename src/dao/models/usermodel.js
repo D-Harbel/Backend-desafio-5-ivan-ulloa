@@ -3,8 +3,8 @@ const mongoose = require('mongoose');
 const usuariosEsquema = new mongoose.Schema(
     {
         nombre: String,
-        apellido: String,  // Agregar el campo 'apellido'
-        edad: Number,      // Agregar el campo 'edad'
+        apellido: String,  
+        edad: Number,      
         email: {
             type: String, unique: true
         },
@@ -12,5 +12,5 @@ const usuariosEsquema = new mongoose.Schema(
     },
 );
 
-const usuariosModelo = mongoose.model("sessions", usuariosEsquema);
+const usuariosModelo = mongoose.model('sessions', usuariosEsquema);
 module.exports = usuariosModelo;

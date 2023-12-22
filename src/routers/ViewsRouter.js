@@ -17,12 +17,12 @@ module.exports = function (io) {
         res.status(200).render('home')
     })
     
-    router.get('/registro',(req,res)=>{
+    router.get('/registrate',(req,res)=>{
     
         let {error}=req.query
     
         res.setHeader('Content-Type','text/html')
-        res.status(200).render('registro', {error})
+        res.status(200).render('registrate', {error})
     })
     
     router.get('/login',(req,res)=>{
